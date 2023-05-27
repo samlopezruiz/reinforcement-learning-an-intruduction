@@ -5,7 +5,7 @@ import scipy.stats
 import mdp
 
 class JacksCarRental(mdp.MDP):
-    """ Jack's Car Rental MDP per Example 4.2. """
+    """ Jack's Car Rental MDP per Example 4.4. """
     gamma = 0.9
     max_cars = 20
     max_poisson = 15
@@ -86,7 +86,7 @@ class JacksCarRental(mdp.MDP):
 
 
 class NonlinearJacksCarRental(JacksCarRental):
-    """ Non-linear version of Jack's Car Rental MDP per Exercise 4.7. """
+    """ Non-linear version of Jack's Car Rental MDP per Exercise 4.4. """
     max_parked = 10
     parked_cost = 4
     reward_range = (JacksCarRental.reward_range[0] - 2 * parked_cost, JacksCarRental.reward_range[1])

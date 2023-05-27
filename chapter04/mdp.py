@@ -25,6 +25,12 @@ class MDP(gym.Env, abc.ABC):
     def render(self, mode='ansi'):
         print(self.state)
 
+def argmax_last(arr):
+    # Reverse the list/array
+    reversed_arr = arr[::-1]
+    # Use argmax on the reversed list/array and adjust the index
+    return len(arr) - 1 - reversed_arr.index(max(reversed_arr))
+
 
 def extract_policy(mdp, value, tolerance=1e-5):
     """ Extract policy from a value function of an MDP.
@@ -59,7 +65,9 @@ def extract_policy(mdp, value, tolerance=1e-5):
             expected_returns += [np.sum(ps * returns)]
 
         # rounded_returns = np.round(expected_returns, -int(np.log10(tolerance)))
-        policy[state] = np.argmax(expected_returns)
+        # policy[state] = np.argmax(expected_returns)
+        # policy[state] = argmax_last(expected_returns)
+        policy[state] = np.random.choice(np.where(expected_returns == max(expected_returns))[0])
 
     return policy
 
@@ -110,7 +118,7 @@ def policy_iteration(mdp, save_history=False):
             policies.append(np.copy(policy))
             values.append(np.copy(value))
 
-        pbar.set_description('Convergence={:.1f}%'.format((policy == old_policy).sum() / np.multiply(*policy.shape) * 100))
+        pbar.set_description('Convergence={:.1f}%'.format((policy == old_policy).sum() /  np.prod(value.shape) * 100))
         pbar.update(1)
 
     history = {'value': values, 'policy': policies}
@@ -118,7 +126,7 @@ def policy_iteration(mdp, save_history=False):
     return (value, policy, history) if save_history else (value, policy)
 
 
-def value_iteration(mdp, tolerance=1e-6):
+def value_iteration(mdp, tolerance=1e-6, save_history=False):
     """ Find and return the optimal value function and optimal policy for the MDP.
 
     This function uses the following version of the value iteration algorithm:
@@ -135,6 +143,8 @@ def value_iteration(mdp, tolerance=1e-6):
 
     old_value = 2 * tolerance
     value = np.zeros(shape=mdp.observation_space.nvec)
+    values = []
+    pbar = tqdm(desc='Convergence=0.0%', position=0)
     while (np.abs(value - old_value) > tolerance).any():
 
         old_value = np.copy(value)
@@ -159,8 +169,17 @@ def value_iteration(mdp, tolerance=1e-6):
                 # Expected returns
                 expected_returns += [np.sum(ps * returns)]
 
+
             value[state] = np.max(expected_returns)
+
+        if save_history:
+            values.append(np.copy(value))
+
+        pbar.set_description('Convergence={:.1f}% ({:.2f})'.format((np.abs(value - old_value) <= tolerance).sum().sum() / np.prod(value.shape) * 100, np.abs(value - old_value).sum()))
+        pbar.update(1)
 
     # Extraction of the optimal policy from the optimal value function
     policy = extract_policy(mdp, value)
-    return value, policy
+    history = {'value': values, 'policy': policy}
+
+    return (value, policy, history) if save_history else (value, policy)
