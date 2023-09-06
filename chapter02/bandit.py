@@ -1,11 +1,8 @@
-# import gym
-# import gym.spaces
-# import gym.utils.seeding
-# import gym.envs.registration
+
 import gymnasium as gym
-import gym.spaces
-import gym.utils.seeding
-import gym.envs.registration
+import gymnasium.spaces
+import gymnasium.utils.seeding
+import gymnasium.envs.registration
 
 import numpy as np
 import matplotlib.pyplot as plt
